@@ -1,7 +1,10 @@
-﻿namespace Furball.Core
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace Furball.Core
 {
     public interface IPathRepository
     {
-        Path GetMethod(string path, string webMethod, object[] parameters);
+        Task<RequestedPath> GetMethodAsync(string path, string httpMethod, Dictionary<string, object> parameters);
     }
 }

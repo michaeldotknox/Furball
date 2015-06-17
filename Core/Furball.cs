@@ -45,13 +45,13 @@ namespace Furball.Core
 
             var pathRepository = _options.PathRepository;
 
-            var path = pathRepository.GetMethod(requestPath, requestMethod, new object[]{});
+            var path = pathRepository.GetMethodAsync(requestPath, requestMethod, new Dictionary<string, object>{});
 
-            object resultObject;
+            object resultObject = null;
 
             try
             {
-                resultObject = path.Method.Invoke(path.Instance, new object[] {});
+                /////resultObject = path.Method.Invoke(path.Instance, new object[] {});
             }
             catch (Exception e)
             {

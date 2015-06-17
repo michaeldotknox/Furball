@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Furball.Common.Attributes;
+using Furball.Core.Exceptions;
 
 [assembly: InternalsVisibleTo("Furball.Core.Tests")]
 
@@ -16,80 +18,11 @@ namespace Furball.Core
     {
         private readonly List<Path> _paths; 
          
-        ///// <summary>
-        ///// This constructor will build the constructors based on the currently loaded assemblies
-        ///// </summary>
-        //internal PathRepository()
-        //{
-        //    _controllers = BuildControllers(from a in AppDomain.CurrentDomain.GetAssemblies()
-        //        from t in a.GetTypes()
-        //        where t.IsDefined(typeof (ControllerAttribute), true)
-        //        select t).ToList();
-        //}
-
-        ///// <summary>
-        ///// This constructors will build the constructors from the specified assembly
-        ///// </summary>
-        ///// <param name="assembly"></param>
-        //internal PathRepository(Assembly assembly)
-        //{
-        //    _controllers = BuildControllers(from t in assembly.GetTypes()
-        //        where t.IsDefined(typeof (ControllerAttribute), true)
-        //        select t).ToList();
-        //}
-
-        /// <summary>
-        /// This constructor will build the constructors from the list of types
-        /// </summary>
-        /// <param name="controllers"></param>
-        internal PathRepository(IEnumerable<Type> controllers)
+        internal PathRepository(IEnumerable<Path> paths)
         {
-            var controllerList = controllers.ToList();
-            _paths = (from t in controllerList
-                      where t.IsDefined(typeof (ControllerAttribute), true)
-                from m in t.GetMethods()
-                where m.IsDefined(typeof (HttpMethodAttribute), true)
-                select
-                    new Path
-                    {
-                        Type = t,
-                        Method = m,
-                        WebMethod = m.GetWebMethod(),
-                        RequestPath = "/" + t.Name,
-                        Parameters =
-                            (from p in m.GetParameters() select new Parameter {Name = p.Name, Type = p.ParameterType})
-                                .ToList()
-                    }).ToList();
-            var defaultController = (from t in controllerList
-                            where t.IsDefined(typeof (DefaultControllerAttribute), true)
-                from m in t.GetMethods()
-                where m.IsDefined(typeof (HttpMethodAttribute), true)
-                select
-                    new Path
-                    {
-                        Method = m,
-                        RequestPath = "/",
-                        Parameters = new List<Parameter>(),
-                        Type = t,
-                        WebMethod = m.GetWebMethod()
-                    }).FirstOrDefault();
-            if (_paths.All(p => p.RequestPath != "/"))
-            {
-                _paths.Add(defaultController);
-            }
-        }
+            if(paths == null) throw new ArgumentNullException(nameof(paths));
 
-        private IEnumerable<Controller> BuildControllers(IEnumerable<Type> types)
-        {
-            return from t in types
-                select
-                    new Controller
-                    {
-                        Path = "/" + t.Name,
-                        Type = t,
-                        Methods =
-                            (from m in t.GetMethods(BindingFlags.Public) select new Method {Name = m.Name}).ToList()
-                    };
+            _paths = new List<Path>(paths);
         }
 
         public NewMethod GetTypeFromPath(string path)
@@ -97,20 +30,48 @@ namespace Furball.Core
             throw new NotImplementedException();
         }
 
-        public Path GetMethod(string path, string webMethod, object[] parameters)
+        public async Task<RequestedPath> GetMethodAsync(string path, string httpMethod, Dictionary<string, object> parameters)
         {
-            var returnPath = (from p in _paths
-                where p.RequestPath == path && p.WebMethod == webMethod && p.Parameters.Count == parameters.Count()
-                select p).FirstOrDefault();
+            var foundPath = _paths.FirstOrDefault(p => p.RequestPath == path);
 
-            var o = Activator.CreateInstance(returnPath.Type);// returnPath.Type.Assembly.CreateInstance(returnPath.Type.Name);
-
-            if (returnPath.Instance == null)
+            //If the path is not found, then throw a PathNotFoundException
+            if (foundPath == null)
             {
-                returnPath.Instance = Activator.CreateInstance(returnPath.Type);// returnPath.Type.Assembly.CreateInstance(returnPath.Type.AssemblyQualifiedName);
+                throw new PathNotFoundException();
             }
 
-            return returnPath;
+            var webMethods = foundPath.WebMethods.Where(w => w.HttpMethod == httpMethod).ToList();
+
+            //If the path is found, but no methods match the expected http method, then throw an exception
+            if (!webMethods.Any())
+            {
+                throw new IncorrectWebMethodException();
+            }
+
+            //Find the method that matches the expected parameters
+            WebMethod foundMethod = null;
+            foreach (var webMethod in webMethods)
+            {
+                var isMethodFound = true;
+                foreach (var parameter in parameters)
+                {
+                    if (webMethod.Parameters.All(p => p.Name != parameter.Key))
+                    {
+                        isMethodFound = false;
+                    }
+                }
+                if (isMethodFound)
+                {
+                    foundMethod = webMethod;
+                    break;
+                }
+            }
+
+            return new RequestedPath
+            {
+                Parameters = (from p in foundMethod.Parameters select (object)p.Name).ToList(),
+                Method = foundMethod.MethodInfo
+            };
         }
     }
 }
