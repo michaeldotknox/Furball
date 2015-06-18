@@ -29,6 +29,8 @@ namespace Furball.Core
                 });
             }
 
+            var method = typeof (TController).GetMethod(methodName);
+
             _paths[path].WebMethods.Add(
                 new WebMethod
                 {

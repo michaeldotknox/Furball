@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
+using Furball.Common;
 using Newtonsoft.Json;
 
 namespace Furball.Core
@@ -48,27 +50,38 @@ namespace Furball.Core
 
             var path = await pathRepository.GetMethodAsync(requestPath, requestMethod, requestParameters);
 
-            object resultObject = null;
+            WebResult resultObject = null;
 
             try
             {
-                resultObject = path.Method.Invoke(path.Instance, (from p in path.Parameters select p).ToArray());
+                object result = path.Method.Invoke(path.Instance, (from p in path.Parameters select p).ToArray());
+
+                var type = result.GetType();
+                if (type != typeof(WebResult))
+                {
+                    resultObject = new WebResult(result, HttpStatusCode.Accepted);
+                }
+                else
+                {
+                    resultObject = (WebResult)result;
+                }
             }
             catch (Exception e)
             {
                 environment["owin.ResponseStatusCode"] = 500;
                 if (_options.HandlerErrors == HandlerErrorTypes.SendErrors)
                 {
-                    resultObject = e;
+                    resultObject = new WebResult(e, HttpStatusCode.InternalServerError);
                 }
                 else
                 {
-                    resultObject = "An error occurred";
+                    resultObject = new WebResult("An error occurred", HttpStatusCode.InternalServerError);
                 }
             }
+            environment["owin.ResponseStatusCode"] = resultObject.Status;
             var stream = (Stream) environment["owin.ResponseBody"];
             var writer = new StreamWriter(stream);
-            writer.Write(JsonConvert.SerializeObject(resultObject));
+            writer.Write(JsonConvert.SerializeObject(resultObject.Result));
             writer.Close();
             stream.Close();
             writer.Dispose();
