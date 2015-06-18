@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
@@ -45,13 +46,13 @@ namespace Furball.Core
 
             var pathRepository = _options.PathRepository;
 
-            var path = pathRepository.GetMethodAsync(requestPath, requestMethod, new Dictionary<string, object>{});
+            var path = await pathRepository.GetMethodAsync(requestPath, requestMethod, requestParameters);
 
             object resultObject = null;
 
             try
             {
-                /////resultObject = path.Method.Invoke(path.Instance, new object[] {});
+                resultObject = path.Method.Invoke(path.Instance, (from p in path.Parameters select p).ToArray());
             }
             catch (Exception e)
             {

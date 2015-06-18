@@ -55,6 +55,7 @@
     <Compile Include="PathRepositoryTests.cs" />
     <Compile Include="InvokeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestController.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Furball.Common.Attributes;
 
-namespace Cats.Sample.Web.Controllers
+namespace Furball.Sample.Web.Controllers
 {
     [Controller, DefaultController]
     public class TestController

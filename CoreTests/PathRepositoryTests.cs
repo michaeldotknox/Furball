@@ -63,6 +63,21 @@ namespace Furball.Core.Tests
         }
 
         [Test]
+        public async void GetReturnsNonNullInstanceOfTheController()
+        {
+            //Arrange
+            const string path = "/";
+            const string httpMethod = "get";
+            var parameters = new Dictionary<string, object>();
+
+            //Act
+            var result = await _sut.GetMethodAsync(path, httpMethod, parameters);
+
+            //Assert
+            result.Instance.Should().NotBeNull();
+        }
+
+        [Test]
         public void GetThrowsPathNotFoundErrorIfPathNotFound()
         {
             //Arrange
@@ -99,6 +114,7 @@ namespace Furball.Core.Tests
                 new Path
                 {
                     RequestPath = "/",
+                    ControllerType = typeof(TestController),
                     WebMethods = new List<WebMethod>
                     {
                         new WebMethod

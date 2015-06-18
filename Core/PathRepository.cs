@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Furball.Common.Attributes;
 using Furball.Core.Exceptions;
 
 [assembly: InternalsVisibleTo("Furball.Core.Tests")]
@@ -16,13 +14,15 @@ namespace Furball.Core
     /// </summary>
     internal class PathRepository : IPathRepository
     {
-        private readonly List<Path> _paths; 
+        private readonly List<Path> _paths;
+        private readonly Dictionary<Type, object> _controllers;
          
         internal PathRepository(IEnumerable<Path> paths)
         {
             if(paths == null) throw new ArgumentNullException(nameof(paths));
 
             _paths = new List<Path>(paths);
+            _controllers = new Dictionary<Type, object>();
         }
 
         public NewMethod GetTypeFromPath(string path)
@@ -67,9 +67,23 @@ namespace Furball.Core
                 }
             }
 
+            object controller;
+            if (_controllers.ContainsKey(foundPath.ControllerType))
+            {
+                controller = _controllers[foundPath.ControllerType];
+            }
+            else
+            {
+                controller = foundPath.ControllerType.Assembly.CreateInstance(foundPath.ControllerType.FullName, true);
+                _controllers.Add(foundPath.ControllerType, controller);
+            }
+
             return new RequestedPath
             {
-                Parameters = (from p in foundMethod.Parameters select (object)p.Name).ToList(),
+                Parameters = (from parameter in parameters
+                    join methodParameter in foundMethod.Parameters on parameter.Key equals methodParameter.Name
+                    select Convert.ChangeType(parameter.Value, methodParameter.Type)).ToList(),
+                Instance = controller,
                 Method = foundMethod.MethodInfo
             };
         }

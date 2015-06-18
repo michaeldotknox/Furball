@@ -49,6 +49,8 @@
     <Compile Include="Furball.cs" />
     <Compile Include="FurballOptions.cs" />
     <Compile Include="IPathRepository.cs" />
+    <Compile Include="IPathSource.cs" />
+    <Compile Include="ManualPathSource.cs" />
     <Compile Include="MethodExtensions.cs" />
     <Compile Include="NewMethod.cs" />
     <Compile Include="Path.cs" />
