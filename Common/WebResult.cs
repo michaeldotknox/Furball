@@ -5,11 +5,9 @@ namespace Furball.Common
 {
     public class WebResult
     {
-        private readonly Dictionary<string, string> _headers;
-
         public WebResult()
         {
-            _headers = new Dictionary<string, string>();
+            Headers = new Dictionary<string, string>();
         }
 
         public WebResult(object result, HttpStatusCode status) : this()
@@ -23,9 +21,11 @@ namespace Furball.Common
 
         public WebResult AddHeader(string key, string value)
         {
-            _headers.Add(key, value);
+            Headers.Add(key, value);
 
             return this;
         }
+
+        public Dictionary<string, string> Headers { get; }
     }
 }

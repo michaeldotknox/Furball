@@ -36,6 +36,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\BodyAttribute.cs" />
     <Compile Include="Attributes\ControllerAttribute.cs" />
     <Compile Include="Attributes\DefaultControllerAttribute.cs" />
     <Compile Include="Attributes\HttpDeleteAttribute.cs" />

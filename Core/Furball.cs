@@ -33,17 +33,19 @@ namespace Furball.Core
             var requestPath = environment["owin.RequestPath"].ToString().ToLower();
             var requestMethod = environment["owin.RequestMethod"].ToString().ToLower();
             var queryString = environment["owin.RequestQueryString"].ToString();
-            var requestParametersList = queryString.Split('&');
-            var requestParameters = new Dictionary<string, object>();
-            if(queryString.Length > 0)
+            //Querystring parameters
+            var requestParameters = new Dictionary<string, RequestParameter>();
+            var parameters = GetParameters(queryString, "QueryString");
+            foreach (var parameter in parameters)
             {
-                foreach (var parameter in requestParametersList)
-                {
-                    var keyValue = parameter.Split('=');
-                    var key = keyValue[0];
-                    var value = (object)keyValue[1];
-                    requestParameters.Add(key, value);
-                }
+                requestParameters.Add(parameter.Key, parameter.Value);
+            }
+
+            //Body parameters
+            parameters = GetParameters((Stream) environment["owin.RequestBody"], "Body");
+            foreach (var parameter in parameters)
+            {
+                requestParameters.Add(parameter.Key, parameter.Value);
             }
 
             var pathRepository = _options.PathRepository;
@@ -54,16 +56,14 @@ namespace Furball.Core
 
             try
             {
-                object result = path.Method.Invoke(path.Instance, (from p in path.Parameters select p).ToArray());
-
-                var type = result.GetType();
-                if (type != typeof(WebResult))
+                if (path.ReturnType == typeof (WebResult))
                 {
-                    resultObject = new WebResult(result, HttpStatusCode.Accepted);
+                    resultObject = (WebResult)path.Method.Invoke(path.Instance, (from p in path.Parameters select p).ToArray());
                 }
                 else
                 {
-                    resultObject = (WebResult)result;
+                    var result = path.Method.Invoke(path.Instance, (from p in path.Parameters select p).ToArray());
+                    resultObject = new WebResult(result, HttpStatusCode.OK);
                 }
             }
             catch (Exception e)
@@ -79,6 +79,24 @@ namespace Furball.Core
                 }
             }
             environment["owin.ResponseStatusCode"] = resultObject.Status;
+            var headers = (IDictionary<string, string[]>)environment["owin.ResponseHeaders"];
+            foreach (var header in resultObject.Headers)
+            {
+                KeyValuePair<string, string[]> outgoingHeader;
+                if (!headers.ContainsKey(header.Key))
+                {
+                    outgoingHeader = new KeyValuePair<string, string[]>(header.Key, new string[] {header.Value});
+                }
+                else
+                {
+                    outgoingHeader = headers.First(h => h.Key == header.Key);
+                    headers.Remove(outgoingHeader);
+                    var headerList = outgoingHeader.Value.ToList();
+                    headerList.AddRange(new List<string> {header.Value});
+                    outgoingHeader = new KeyValuePair<string, string[]>(header.Key, headerList.ToArray());
+                }
+                headers.Add(outgoingHeader);
+            }
             var stream = (Stream) environment["owin.ResponseBody"];
             var writer = new StreamWriter(stream);
             writer.Write(JsonConvert.SerializeObject(resultObject.Result));
@@ -88,6 +106,34 @@ namespace Furball.Core
             stream.Dispose();
 
             await _next.Invoke(environment);
+        }
+
+        private Dictionary<string, RequestParameter> GetParameters(string parameters, string source)
+        {
+            var requestParametersList = parameters.Split('&');
+            var requestParameters = new Dictionary<string, RequestParameter>();
+            if (parameters.Length > 0)
+            {
+                foreach (var parameter in requestParametersList)
+                {
+                    var keyValue = parameter.Split('=');
+                    var key = keyValue[0];
+                    var value = (object)keyValue[1];
+                    requestParameters.Add(key, new RequestParameter {Source = source, Value = value});
+                }
+            }
+
+            return requestParameters;
+        }
+
+        private Dictionary<string, RequestParameter> GetParameters(Stream stream, string source)
+        {
+            var reader = new StreamReader(stream);
+            var parameters = reader.ReadToEnd();
+            reader.Close();
+            stream.Close();
+
+            return GetParameters(parameters, source);
         }
     }
 }

@@ -30,7 +30,7 @@ namespace Furball.Core
             throw new NotImplementedException();
         }
 
-        public async Task<RequestedPath> GetMethodAsync(string path, string httpMethod, Dictionary<string, object> parameters)
+        public async Task<RequestedPath> GetMethodAsync(string path, string httpMethod, Dictionary<string, RequestParameter> parameters)
         {
             var foundPath = _paths.FirstOrDefault(p => p.RequestPath == path);
 
@@ -80,12 +80,18 @@ namespace Furball.Core
 
             return new RequestedPath
             {
-                Parameters = (from parameter in parameters
-                    join methodParameter in foundMethod.Parameters on parameter.Key equals methodParameter.Name
-                    select Convert.ChangeType(parameter.Value, methodParameter.Type)).ToList(),
+                Parameters = GetParameterValues(foundMethod.Parameters, parameters),
                 Instance = controller,
+                ReturnType = foundMethod.ReturnType,
                 Method = foundMethod.MethodInfo
             };
+        }
+
+        private List<object> GetParameterValues(List<Parameter> methodParameters, Dictionary<string, RequestParameter> requestParameters)
+        {
+            return (from parameter in requestParameters
+                join methodParameter in methodParameters on parameter.Key equals methodParameter.Name
+                select Convert.ChangeType(parameter.Value.Value, methodParameter.Type)).ToList();
         }
     }
 }

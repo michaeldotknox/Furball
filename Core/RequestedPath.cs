@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace Furball.Core
@@ -7,6 +8,7 @@ namespace Furball.Core
     {
         public object Instance { get; set; }
         public MethodInfo Method { get; set; }
+        public Type ReturnType { get; set; }
         public List<object> Parameters { get; set; } 
     }
 }
