@@ -37,7 +37,7 @@ namespace Furball.Core.Tests
             //Arrange
             const string path = "/";
             const string webMethod = "get";
-            var parameters = new Dictionary<string, RequestParameter>();
+            var parameters = new List<RequestParameter>();
 
             //Act
             var result = await _sut.GetMethodAsync(path, webMethod, parameters);
@@ -52,7 +52,7 @@ namespace Furball.Core.Tests
             //Arrange
             const string path = "/";
             const string webMethod = "get";
-            var parameters = new Dictionary<string, RequestParameter> {{"id", new RequestParameter {Value = 1, Source = "QueryString"} }};
+            var parameters = new List<RequestParameter> {new RequestParameter {Name = "id", Value = 1, Source = "QueryString"}};
 
             //Act
             var result = await _sut.GetMethodAsync(path, webMethod, parameters);
@@ -68,7 +68,7 @@ namespace Furball.Core.Tests
             //Arrange
             const string path = "/";
             const string httpMethod = "get";
-            var parameters = new Dictionary<string, RequestParameter>();
+            var parameters = new List<RequestParameter>();
 
             //Act
             var result = await _sut.GetMethodAsync(path, httpMethod, parameters);
@@ -83,7 +83,7 @@ namespace Furball.Core.Tests
             //Arrange
             const string path = "/badpath";
             const string webMethod = "get";
-            var parameters = new Dictionary<string, RequestParameter>();
+            var parameters = new List<RequestParameter>();
 
             //Act
             Func<Task<RequestedPath>> action = async () => await _sut.GetMethodAsync(path, webMethod, parameters);
@@ -98,7 +98,7 @@ namespace Furball.Core.Tests
             //Arrange
             const string path = "/";
             const string webMethod = "badWebMethod";
-            var parameters = new Dictionary<string, RequestParameter>();
+            var parameters = new List<RequestParameter>();
 
             //Act
             Func<Task<RequestedPath>> action = async () => await _sut.GetMethodAsync(path, webMethod, parameters);

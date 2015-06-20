@@ -34,19 +34,11 @@ namespace Furball.Core
             var requestMethod = environment["owin.RequestMethod"].ToString().ToLower();
             var queryString = environment["owin.RequestQueryString"].ToString();
             //Querystring parameters
-            var requestParameters = new Dictionary<string, RequestParameter>();
-            var parameters = GetParameters(queryString, "QueryString");
-            foreach (var parameter in parameters)
-            {
-                requestParameters.Add(parameter.Key, parameter.Value);
-            }
+            var requestParameters = new List<RequestParameter>();
+            requestParameters.AddRange(GetParameters(queryString, "QueryString"));
 
             //Body parameters
-            parameters = GetParameters((Stream) environment["owin.RequestBody"], "Body");
-            foreach (var parameter in parameters)
-            {
-                requestParameters.Add(parameter.Key, parameter.Value);
-            }
+            requestParameters.AddRange(GetParameters((Stream)environment["owin.RequestBody"], "Body"));
 
             var pathRepository = _options.PathRepository;
 
@@ -108,25 +100,25 @@ namespace Furball.Core
             await _next.Invoke(environment);
         }
 
-        private Dictionary<string, RequestParameter> GetParameters(string parameters, string source)
+        private List<RequestParameter> GetParameters(string parameters, string source)
         {
             var requestParametersList = parameters.Split('&');
-            var requestParameters = new Dictionary<string, RequestParameter>();
+            var requestParameters = new List<RequestParameter>();
             if (parameters.Length > 0)
             {
                 foreach (var parameter in requestParametersList)
                 {
                     var keyValue = parameter.Split('=');
-                    var key = keyValue[0];
+                    var name = keyValue[0];
                     var value = (object)keyValue[1];
-                    requestParameters.Add(key, new RequestParameter {Source = source, Value = value});
+                    requestParameters.Add(new RequestParameter {Name = name, Source = source, Value = value});
                 }
             }
 
             return requestParameters;
         }
 
-        private Dictionary<string, RequestParameter> GetParameters(Stream stream, string source)
+        private List<RequestParameter> GetParameters(Stream stream, string source)
         {
             var reader = new StreamReader(stream);
             var parameters = reader.ReadToEnd();

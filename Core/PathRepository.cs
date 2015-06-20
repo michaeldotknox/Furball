@@ -30,7 +30,7 @@ namespace Furball.Core
             throw new NotImplementedException();
         }
 
-        public async Task<RequestedPath> GetMethodAsync(string path, string httpMethod, Dictionary<string, RequestParameter> parameters)
+        public async Task<RequestedPath> GetMethodAsync(string path, string httpMethod, List<RequestParameter> parameters)
         {
             var foundPath = _paths.FirstOrDefault(p => p.RequestPath == path);
 
@@ -55,7 +55,7 @@ namespace Furball.Core
                 var isMethodFound = true;
                 foreach (var parameter in parameters)
                 {
-                    if (webMethod.Parameters.All(p => p.Name != parameter.Key))
+                    if (webMethod.Parameters.All(p => p.Name != parameter.Name))
                     {
                         isMethodFound = false;
                     }
@@ -87,11 +87,11 @@ namespace Furball.Core
             };
         }
 
-        private List<object> GetParameterValues(List<Parameter> methodParameters, Dictionary<string, RequestParameter> requestParameters)
+        private List<object> GetParameterValues(List<Parameter> methodParameters, List<RequestParameter> requestParameters)
         {
             return (from parameter in requestParameters
-                join methodParameter in methodParameters on parameter.Key equals methodParameter.Name
-                select Convert.ChangeType(parameter.Value.Value, methodParameter.Type)).ToList();
+                join methodParameter in methodParameters on parameter.Name equals methodParameter.Name
+                select Convert.ChangeType(parameter.Value, methodParameter.Type)).ToList();
         }
     }
 }
