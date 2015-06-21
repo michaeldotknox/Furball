@@ -10,5 +10,12 @@ namespace Furball.Core
 
             return app;
         }
+
+        public static IAppBuilder UseFurball(this IAppBuilder app)
+        {
+            app.Use(typeof (Furball));
+
+            return app;
+        }
     }
 }

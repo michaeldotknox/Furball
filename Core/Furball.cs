@@ -42,7 +42,32 @@ namespace Furball.Core
 
             var pathRepository = _options.PathRepository;
 
-            var path = await pathRepository.GetMethodAsync(requestPath, requestMethod, requestParameters);
+            RequestedPath path = null;
+            try
+            {
+                path = await pathRepository.GetMethodAsync(requestPath, requestMethod, requestParameters);
+            }
+            catch (Exception e)
+            {
+                environment["owin.ResponseStatusCode"] = 500;
+                string message;
+                if (_options.HandlerErrors == HandlerErrorTypes.SendErrors)
+                {
+                    message = e.ToString();
+                }
+                else
+                {
+                    message = "An error occurred";
+                }
+                var errorStream = (Stream)environment["owin.ResponseBody"];
+                var errorWriter = new StreamWriter(errorStream);
+                errorWriter.Write(message);
+                errorWriter.Close();
+                errorStream.Close();
+                errorWriter.Dispose();
+                errorStream.Dispose();
+                return;
+            }
 
             WebResult resultObject = null;
 
