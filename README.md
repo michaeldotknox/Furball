@@ -21,5 +21,8 @@ Add the following code to the SampleController class:
 public class SampleController
 {
 	public int Get(int id)
+	{
+		return 1;
+	}
 }
 ``` 
