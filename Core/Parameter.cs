@@ -6,5 +6,6 @@ namespace Furball.Core
     {
         internal string Name { get; set; }
         internal Type Type { get; set; }
+        internal bool IsBodyParameter { get; set; }
     }
 }

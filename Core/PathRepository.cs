@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Furball.Core.Exceptions;
@@ -16,6 +17,7 @@ namespace Furball.Core
     {
         private readonly List<Path> _paths;
         private readonly Dictionary<Type, object> _controllers;
+        private readonly Dictionary<Type, ConstructorInfo> _parameters; 
          
         internal PathRepository(IEnumerable<Path> paths)
         {
@@ -30,7 +32,7 @@ namespace Furball.Core
             throw new NotImplementedException();
         }
 
-        public async Task<RequestedPath> GetMethodAsync(string path, string httpMethod, Dictionary<string, RequestParameter> parameters)
+        public async Task<RequestedPath> GetMethodAsync(string path, string httpMethod, List<RequestParameter> parameters)
         {
             var foundPath = _paths.FirstOrDefault(p => p.RequestPath == path);
 
@@ -50,14 +52,18 @@ namespace Furball.Core
 
             //Find the method that matches the expected parameters
             WebMethod foundMethod = null;
+            var hasBodyParameters = (parameters.Count(p => p.Source == "Body")) > 0;
             foreach (var webMethod in webMethods)
             {
                 var isMethodFound = true;
                 foreach (var parameter in parameters)
                 {
-                    if (webMethod.Parameters.All(p => p.Name != parameter.Key))
+                    if(parameter.Source != "Body")
                     {
-                        isMethodFound = false;
+                        if (webMethod.Parameters.All(p => p.Name != parameter.Name && !p.IsBodyParameter && parameter.Source != "Body"))
+                        {
+                            isMethodFound = false;
+                        }
                     }
                 }
                 if (isMethodFound)
@@ -80,18 +86,45 @@ namespace Furball.Core
 
             return new RequestedPath
             {
-                Parameters = GetParameterValues(foundMethod.Parameters, parameters),
+                Parameters = GetParameterValues(parameters, foundMethod),
                 Instance = controller,
                 ReturnType = foundMethod.ReturnType,
                 Method = foundMethod.MethodInfo
             };
         }
 
-        private List<object> GetParameterValues(List<Parameter> methodParameters, Dictionary<string, RequestParameter> requestParameters)
+        private List<object> GetParameterValues(List<RequestParameter> requestParameters, WebMethod method)
         {
-            return (from parameter in requestParameters
-                join methodParameter in methodParameters on parameter.Key equals methodParameter.Name
-                select Convert.ChangeType(parameter.Value.Value, methodParameter.Type)).ToList();
+            var methodParameters = method.Parameters;
+            var parameters = (from parameter in requestParameters
+                join methodParameter in methodParameters on parameter.Name equals methodParameter.Name
+                where parameter.Source != "Body" && !methodParameter.IsBodyParameter
+                select Convert.ChangeType(parameter.Value, methodParameter.Type)).ToList();
+
+            if(method.HasBodyParameters)
+            {
+                parameters.Add(
+                    BuildBodyParameter(
+                        (from requestParameter in requestParameters
+                            where requestParameter.Source == "Body"
+                            select requestParameter), methodParameters.FirstOrDefault(p => p.IsBodyParameter)));
+            }
+
+            return parameters;
+        }
+
+        private object BuildBodyParameter(IEnumerable<RequestParameter> requestParameters, Parameter methodParameter)
+        {
+            var parameterObject = methodParameter.Type.Assembly.CreateInstance(methodParameter.Type.FullName);
+            foreach (var property in methodParameter.Type.GetProperties())
+            {
+                if (requestParameters.Any(p => p.Name == property.Name))
+                {
+                    property.SetValue(parameterObject, requestParameters.First(p => p.Name == property.Name).Value);
+                }
+            }
+
+            return parameterObject;
         }
     }
 }
