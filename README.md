@@ -66,3 +66,13 @@ public int Post([Body] TestObject testObject)
 	return 1;
 }
 ```
+
+## Returning a status code
+If you want to return a different status code, return a WebResult object instead of a specific object.  This will allow you to specify a http status code.
+
+```
+public WebResult Post[Body] TestObject testObject)
+{
+	return new WebResult(testObject, HttpStatusCode.Accepted);
+}
+```
