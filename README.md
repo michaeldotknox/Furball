@@ -11,7 +11,20 @@ This guide will walk you through creating a project that uses Furball.  These ex
 Open Visual Studio 2015 RC
 Create a new ASP.Net Web Application project
 When asked to select a template, choose the empty template under the ASP.NET 5 Preview Templates
-Add a reference to the Furball project, either using NuGet or by manually creating a reference to the Furball assembly.
+Add a reference to the Furball project, either using NuGet or by manually creating a reference to the Furball Core assembly and the Furball Common Assembly.
+
+## Setting up OWIN to use Furball
+Open the startup.cs class and change to code to this:
+
+```
+public class Startup
+{
+	public void Configure(IApplicationBuilder app)
+	{
+		app.UseFurball()
+	}
+}
+```
 
 ## Creating a controller
 Add a new class to the project.  Name it SampleController.
@@ -26,3 +39,21 @@ public class SampleController
 	}
 }
 ``` 
+
+## Configuring the path
+For Furball to know how to direct web requests, you need to tell it which paths map to which methods.  To do this, you need to create a FurballOptions object and tell it to use a ManualPathSource.
+
+```
+public class Startup
+{
+	var options = new FurballOptions
+	{
+		PathSource = new ManualPathSource().AddPath<SampleController>("/", "Get", "get", new object[] {})
+	}
+	
+	app.UseFurball(options);
+}
+```
+
+The AddPath method of the ManualPathSource object takes the type of the controller as a type parameter, and the path, the name of the method, the http method, and an array objects that represents the parameters in teh requested method.
+   
