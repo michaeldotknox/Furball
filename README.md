@@ -56,4 +56,13 @@ public class Startup
 ```
 
 The AddPath method of the ManualPathSource object takes the type of the controller as a type parameter, and the path, the name of the method, the http method, and an array objects that represents the parameters in teh requested method.
-   
+
+## Handling parameters in the request body
+To handle posts or puts, the parameters need to be on the body of the request.  You handle this by adding a [Body] attribute to the parameter of the method:
+
+```
+public int Post([Body] TestObject testObject)
+{
+	return 1;
+}
+```
