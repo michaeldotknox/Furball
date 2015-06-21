@@ -18,10 +18,22 @@ namespace Sample_Web_Api_Site.Controllers
             return Ok(new TestObject { Property1 = "Property 1", Property2 = "Property 2" });
         }
 
+        //[HttpPost]
+        //public async Task<IHttpActionResult> Post([FromBody] TestObject testObject)
+        //{
+        //    return Ok(testObject);
+        //}
+
+        //[HttpPost]
+        //public async Task<IHttpActionResult> Post()
+        //{
+        //    return Ok(new TestObject());
+        //}
+
         [HttpPost]
-        public async Task<IHttpActionResult> Post(TestObject testObject)
+        public async Task<IHttpActionResult> Post(int id)
         {
-            return Ok(testObject);
+            return Ok(new TestObject {Property1 = id.ToString()});
         }
     }
     public class TestObject

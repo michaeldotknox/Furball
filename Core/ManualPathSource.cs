@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Furball.Common.Attributes;
 
 namespace Furball.Core
 {
@@ -30,16 +31,24 @@ namespace Furball.Core
             }
 
             var method = typeof (TController).GetMethod(methodName);
+            var newMethod = new WebMethod
+            {
+                HttpMethod = httpMethod,
+                MethodInfo = method,
+                ReturnType = method.ReturnType,
+                Parameters = (from p in method.GetParameters()
+                    select
+                        new Parameter
+                        {
+                            Name = p.Name,
+                            Type = p.ParameterType,
+                            IsBodyParameter = p.GetCustomAttributes(typeof (BodyAttribute), true).Count() == 1
+                        })
+                    .ToList()
+            };
+            newMethod.HasBodyParameters = newMethod.Parameters.Count(p => p.IsBodyParameter) >= 1;
 
-            _paths[path].WebMethods.Add(
-                new WebMethod
-                {
-                    HttpMethod = httpMethod,
-                    MethodInfo = typeof (TController).GetMethod(methodName),
-                    ReturnType = typeof (TController).GetMethod(methodName).ReturnType,
-                    Parameters = (from p in typeof (TController).GetMethod(methodName).GetParameters()
-                        select new Parameter {Name = p.Name, Type = p.ParameterType}).ToList()
-                });
+            _paths[path].WebMethods.Add(newMethod);
 
             return this;
         }
