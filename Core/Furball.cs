@@ -114,6 +114,12 @@ namespace Furball.Core
                 }
                 headers.Add(outgoingHeader);
             }
+
+            //Remove requested headers
+            foreach (var header in _options.HeadersToRemove)
+            {
+                headers.Remove(header);
+            }
             var stream = (Stream) environment["owin.ResponseBody"];
             var writer = new StreamWriter(stream);
             writer.Write(JsonConvert.SerializeObject(resultObject.Result));
