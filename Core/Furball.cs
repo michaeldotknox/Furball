@@ -120,6 +120,9 @@ namespace Furball.Core
             {
                 headers.Remove(header);
             }
+
+            //Set the correct content type
+            headers["content-type"] = new[] {"application/json"};
             var stream = (Stream) environment["owin.ResponseBody"];
             var writer = new StreamWriter(stream);
             writer.Write(JsonConvert.SerializeObject(resultObject.Result));
