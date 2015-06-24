@@ -2,7 +2,7 @@
 
 namespace Furball.Core
 {
-    public class NewMethod
+    public class Method
     {
         internal object Object { get; set; }
         internal MethodInfo MethodInfo { get; set; }
