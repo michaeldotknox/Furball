@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Net;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("Furball.Core.Tests")]
 
 namespace Furball.Common
 {
@@ -8,11 +11,23 @@ namespace Furball.Common
         public WebResult()
         {
             Headers = new Dictionary<string, string>();
+            Status = HttpStatusCode.NoContent;
         }
 
         public WebResult(object result, HttpStatusCode status) : this()
         {
             Result= result;
+            Status = status;
+        }
+
+        public WebResult(object result) : this()
+        {
+            Result = result;
+            Status = result == null ? Status = HttpStatusCode.NoContent : HttpStatusCode.OK;
+        }
+
+        public WebResult(HttpStatusCode status) : this()
+        {
             Status = status;
         }
 

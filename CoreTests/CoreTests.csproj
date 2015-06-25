@@ -56,11 +56,16 @@
     <Compile Include="InvokeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestController.cs" />
+    <Compile Include="WebResultTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{33C98815-2E64-4165-9545-C8B15CEAD8FA}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Core\Core.csproj">
       <Project>{c6d95b96-2013-4ccb-949a-7e225472c610}</Project>
       <Name>Core</Name>
