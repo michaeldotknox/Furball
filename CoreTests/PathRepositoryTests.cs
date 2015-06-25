@@ -120,14 +120,14 @@ namespace Furball.Core.Tests
                         new WebMethod
                         {
                             HttpMethod = "get",
-                            Parameters = new List<Parameter>()
+                            Parameters = new List<MethodParameter>()
                         },
                         new WebMethod
                         {
                             HttpMethod = "get",
-                            Parameters = new List<Parameter>
+                            Parameters = new List<MethodParameter>
                             {
-                                new Parameter
+                                new MethodParameter
                                 {
                                     Name = "id",
                                     Type = typeof(int)

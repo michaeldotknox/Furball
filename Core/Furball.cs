@@ -49,7 +49,7 @@ namespace Furball.Core
             }
             catch (Exception e)
             {
-                environment["owin.ResponseStatusCode"] = 500;
+                environment["owin.ResponseStatusCode"] = HttpStatusCode.InternalServerError;
                 string message;
                 if (_options.HandlerErrors == HandlerErrorTypes.SendErrors)
                 {

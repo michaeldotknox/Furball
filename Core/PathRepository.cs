@@ -113,7 +113,7 @@ namespace Furball.Core
             return parameters;
         }
 
-        private object BuildBodyParameter(IEnumerable<RequestParameter> requestParameters, Parameter methodParameter)
+        private object BuildBodyParameter(IEnumerable<RequestParameter> requestParameters, MethodParameter methodParameter)
         {
             var parameterObject = methodParameter.Type.Assembly.CreateInstance(methodParameter.Type.FullName);
             foreach (var property in methodParameter.Type.GetProperties())

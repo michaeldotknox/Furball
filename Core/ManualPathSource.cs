@@ -38,7 +38,7 @@ namespace Furball.Core
                 ReturnType = method.ReturnType,
                 Parameters = (from p in method.GetParameters()
                     select
-                        new Parameter
+                        new MethodParameter
                         {
                             Name = p.Name,
                             Type = p.ParameterType,
