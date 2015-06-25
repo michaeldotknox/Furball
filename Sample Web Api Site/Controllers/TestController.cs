@@ -30,15 +30,27 @@ namespace Sample_Web_Api_Site.Controllers
         //    return Ok(new TestObject());
         //}
 
+        //[HttpPost]
+        //public async Task<IHttpActionResult> Post(int id)
+        //{
+        //    return Ok(new TestObject {Property1 = id.ToString()});
+        //}
+
         [HttpPost]
-        public async Task<IHttpActionResult> Post(int id)
+        public async Task<IHttpActionResult> Post(ComplexTestObject testObject)
         {
-            return Ok(new TestObject {Property1 = id.ToString()});
+            return Ok(testObject);
         }
     }
     public class TestObject
     {
         public string Property1 { get; set; }
         public string Property2 { get; set; }
+    }
+
+    public class ComplexTestObject
+    {
+        public int id { get; set; }
+        public TestObject TestObject { get; set; }
     }
 }

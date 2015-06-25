@@ -27,7 +27,7 @@ namespace Furball.Core
             _controllers = new Dictionary<Type, object>();
         }
 
-        public NewMethod GetTypeFromPath(string path)
+        public Method GetTypeFromPath(string path)
         {
             throw new NotImplementedException();
         }

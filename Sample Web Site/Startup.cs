@@ -16,6 +16,7 @@ namespace Furball.Sample.Web
                         .AddPath<StatusReturnMethod>("/status", "GetList", "get", new object[] {})
                         .AddPath<StatusReturnMethod>("/status", "Get", "get", new object[] {1})
                         .AddPath<BodyParameterController>("/body", "Post", "post", new object[] {new TestController()})
+                        .AddPath<HeaderController>("/header", "GetAsync", "get", new object[] {})
             }.RemoveHeader("Server");
 
             app.UseFurball(options);

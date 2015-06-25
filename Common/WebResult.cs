@@ -26,6 +26,6 @@ namespace Furball.Common
             return this;
         }
 
-        public Dictionary<string, string> Headers { get; }
+        internal Dictionary<string, string> Headers { get; }
     }
 }
