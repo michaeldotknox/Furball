@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using Furball.Common;
 using Furball.Common.Attributes;
 
 namespace Furball.Core
@@ -7,10 +10,12 @@ namespace Furball.Core
     public class ManualPathSource : IPathSource
     {
         private readonly Dictionary<string, Path> _paths;
+        private readonly List<LambdaExpression> _expressions;
 
         public ManualPathSource()
         {
             _paths = new Dictionary<string, Path>();
+            _expressions = new List<LambdaExpression>();
         }
 
         public List<Path> GetPaths()
@@ -50,6 +55,24 @@ namespace Furball.Core
 
             _paths[path].WebMethods.Add(newMethod);
 
+            return this;
+        }
+
+        public ManualPathSource AddPath<TController>(Expression<Func<TController, object>> expression)
+        {
+            _expressions.Add(expression);
+            return this;
+        }
+
+        public ManualPathSource AddPath<TController>(Expression<Func<TController, WebResult>> expression)
+        {
+            _expressions.Add(expression);
+            return this;
+        }
+
+        public ManualPathSource AddPath<TController>(Expression<Action<TController>> expression)
+        {
+            _expressions.Add(expression);
             return this;
         }
     }
