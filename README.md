@@ -57,6 +57,66 @@ public class Startup
 
 The AddPath method of the ManualPathSource object takes the type of the controller as a type parameter, and the path, the http method, and an expression that represents the method to be called for that path, along with a list of parameter types that the method will take.  You can use the helper method Parameter.TypeOf to make it easier to pass the list of types.
 
+## Specifying paths with attributes
+Furball can detect paths using attributes on the methods of a controller.  Simply add the Path attribute and specify the correct parameters.
+
+```
+public class SampleController
+{
+	[Path(HttpGet, "/")]
+	public int Get(int id)
+	{
+		return 1;
+	}
+}
+```
+
+Then specify the AttributePathSource in the FurballOptions.
+
+```
+public class Startup
+{
+	var options = new FurballOptions
+	{
+		PathSource = new AttributePathSource()
+	}
+	
+	app.UseFurball(options);
+}
+```
+
+## Specifying paths manually and with attributes
+You can also specify multiple ways of creating paths for Furball to use.  Simple use the AddPathSource method to add any number of path sources.
+
+```
+public class Startup
+{
+	var options = new FurballOptions()
+		.AddPathSource(new ManualPathSource().AddPath<SampleController>("/", "get", x => x.Get(Parameter.OfType<int>()))
+		.AddPathSource(new AttributePathSource());
+	
+	app.UseFurball(options);
+}
+```
+
+Or use the PathSources property.
+
+```
+public class Startup
+{
+	var options = new FurballOptions
+	{
+		PathSources = new	{
+							new ManualPathSource().AddPath<SampleController>("/", "get", x => x.Get(Parameter.OfType<int>())),
+							new AttributePathSource())
+							}
+	} 
+}
+```
+
+## Creating your own path sources
+With Furball, you can specify your paths any way you like.  If you want to use a different scheme to specify parameters in the Url, you can do so.  If you want to create a convention-based method of creating paths, you can do that, too.  All you need to do it to create a new class that implemented IPathSource.
+
 ## Handling parameters in the request body
 To handle posts or puts, the parameters need to be on the body of the request.  You handle this by adding a [Body] attribute to the parameter of the method:
 
