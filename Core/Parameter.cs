@@ -1,11 +1,10 @@
-﻿using System;
-
-namespace Furball.Core
+﻿namespace Furball.Core
 {
-    public class Parameter
+    public static class Parameter
     {
-        internal string Name { get; set; }
-        internal Type Type { get; set; }
-        internal bool IsBodyParameter { get; set; }
+        public static T OfType<T>()
+        {
+            return default(T);
+        }
     }
 }

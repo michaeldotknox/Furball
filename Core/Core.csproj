@@ -52,12 +52,13 @@
     <Compile Include="IPathSource.cs" />
     <Compile Include="ManualPathSource.cs" />
     <Compile Include="MethodExtensions.cs" />
-    <Compile Include="NewMethod.cs" />
+    <Compile Include="Method.cs" />
+    <Compile Include="Parameter.cs" />
     <Compile Include="Path.cs" />
     <Compile Include="PathRepository.cs" />
     <Compile Include="HandlerErrorTypes.cs" />
     <Compile Include="OwinExtensions.cs" />
-    <Compile Include="Parameter.cs" />
+    <Compile Include="MethodParameter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestedPath.cs" />
     <Compile Include="RequestParameter.cs" />

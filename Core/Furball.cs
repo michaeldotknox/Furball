@@ -49,7 +49,7 @@ namespace Furball.Core
             }
             catch (Exception e)
             {
-                environment["owin.ResponseStatusCode"] = 500;
+                environment["owin.ResponseStatusCode"] = HttpStatusCode.InternalServerError;
                 string message;
                 if (_options.HandlerErrors == HandlerErrorTypes.SendErrors)
                 {
@@ -114,6 +114,15 @@ namespace Furball.Core
                 }
                 headers.Add(outgoingHeader);
             }
+
+            //Remove requested headers
+            foreach (var header in _options.HeadersToRemove)
+            {
+                headers.Remove(header);
+            }
+
+            //Set the correct content type
+            headers["content-type"] = new[] {"application/json"};
             var stream = (Stream) environment["owin.ResponseBody"];
             var writer = new StreamWriter(stream);
             writer.Write(JsonConvert.SerializeObject(resultObject.Result));
