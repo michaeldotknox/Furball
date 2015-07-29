@@ -48,14 +48,14 @@ public class Startup
 {
 	var options = new FurballOptions
 	{
-		PathSource = new ManualPathSource().AddPath<SampleController>("/", "Get", "get", new object[] {})
+		PathSource = new ManualPathSource().AddPath<SampleController>("/", "get", x => x.Get(Parameter.OfType<int>()))
 	}
 	
 	app.UseFurball(options);
 }
 ```
 
-The AddPath method of the ManualPathSource object takes the type of the controller as a type parameter, and the path, the name of the method, the http method, and an array objects that represents the parameters in teh requested method.
+The AddPath method of the ManualPathSource object takes the type of the controller as a type parameter, and the path, the http method, and an expression that represents the method to be called for that path, along with a list of parameter types that the method will take.  You can use the helper method Parameter.TypeOf to make it easier to pass the list of types.
 
 ## Handling parameters in the request body
 To handle posts or puts, the parameters need to be on the body of the request.  You handle this by adding a [Body] attribute to the parameter of the method:
